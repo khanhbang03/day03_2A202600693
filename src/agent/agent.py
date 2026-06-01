@@ -44,24 +44,76 @@ class ReActAgent:
         3. Append Observation to prompt and repeat until Final Answer.
         """
         logger.log_event("AGENT_START", {"input": user_input, "model": self.llm.model_name})
-        
+
+        self.history = []
         current_prompt = user_input
         steps = 0
+        answer = None
 
         while steps < self.max_steps:
             # TODO: Generate LLM response
-            # result = self.llm.generate(current_prompt, system_prompt=self.get_system_prompt())
-            
+            result = self.llm.generate(current_prompt, system_prompt=self.get_system_prompt())
+            content = result.get("content", "").strip()
+            logger.log_event("LLM_RESPONSE", {
+                "prompt": current_prompt,
+                "content": content,
+                "usage": result.get("usage"),
+                "latency_ms": result.get("latency_ms")
+            })
+
             # TODO: Parse Thought/Action from result
-            
+            action_data = self._extract_action(content)
+
             # TODO: If Action found -> Call tool -> Append Observation
-            
+            if action_data:
+                observation = self._execute_tool(action_data["name"], action_data["args"])
+                self.history.append({"role": "assistant", "content": content})
+                self.history.append({"role": "observation", "content": observation})
+                current_prompt = f"{user_input}\n\n{self._format_history()}"
+                steps += 1
+                continue
+
             # TODO: If Final Answer found -> Break loop
-            
+            answer = self._extract_final_answer(content)
+            if answer:
+                self.history.append({"role": "assistant", "content": content})
+                break
+
+            if content:
+                answer = content
+                break
+
             steps += 1
-            
-        logger.log_event("AGENT_END", {"steps": steps})
-        return "Not implemented. Fill in the TODOs!"
+
+        if answer is None:
+            answer = "I could not determine a final answer from the model output."
+
+        logger.log_event("AGENT_END", {"steps": steps, "final_answer": answer})
+        return answer
+
+    def _format_history(self) -> str:
+        formatted_entries = []
+        for item in self.history:
+            if item["role"] == "assistant":
+                formatted_entries.append(item["content"])
+            elif item["role"] == "observation":
+                formatted_entries.append(f"Observation: {item['content']}")
+        return "\n".join(formatted_entries)
+
+    def _extract_action(self, text: str):
+        match = re.search(r"Action:\s*([A-Za-z_][A-Za-z0-9_]*)\((.*?)\)", text, re.DOTALL)
+        if not match:
+            return None
+        return {
+            "name": match.group(1).strip(),
+            "args": match.group(2).strip()
+        }
+
+    def _extract_final_answer(self, text: str) -> Optional[str]:
+        match = re.search(r"Final Answer:\s*(.+)$", text, re.IGNORECASE | re.DOTALL)
+        if not match:
+            return None
+        return match.group(1).strip()
 
     def _execute_tool(self, tool_name: str, args: str) -> str:
         """
@@ -70,5 +122,13 @@ class ReActAgent:
         for tool in self.tools:
             if tool['name'] == tool_name:
                 # TODO: Implement dynamic function calling or simple if/else
-                return f"Result of {tool_name}"
+                function = tool.get("function") or tool.get("executor") or tool.get("callable")
+                if callable(function):
+                    try:
+                        return function(args) if args else function()
+                    except TypeError:
+                        return function(args)
+                    except Exception as exc:
+                        return f"Tool {tool_name} failed: {exc}"
+                return tool.get("description", f"Executed {tool_name} with args: {args}")
         return f"Tool {tool_name} not found."

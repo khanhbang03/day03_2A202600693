@@ -30,7 +30,26 @@ class PerformanceTracker:
         TODO: Implement real pricing logic.
         For now, returns a dummy constant.
         """
-        return (usage.get("total_tokens", 0) / 1000) * 0.01
+        total_tokens = usage.get("total_tokens")
+        if total_tokens is None:
+            total_tokens = usage.get("prompt_tokens", 0) + usage.get("completion_tokens", 0)
+
+        model_key = model.lower()
+        pricing_per_1k = {
+            "gpt-4": 0.06,
+            "gpt-4o": 0.03,
+            "gpt-4o-mini": 0.002,
+            "gpt-3.5": 0.002,
+            "phi-3-mini": 0.001,
+            "llama": 0.0005,
+            "local": 0.0,
+        }
+
+        for key, rate in pricing_per_1k.items():
+            if key in model_key:
+                return (total_tokens / 1000) * rate
+
+        return (total_tokens / 1000) * 0.01
 
 # Global tracker instance
 tracker = PerformanceTracker()
