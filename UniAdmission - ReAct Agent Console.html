@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniAdmission - ReAct Agent Console</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Google Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0d1117;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #161b22; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
+    </style>
+</head>
+<body class="text-gray-100 min-h-screen flex flex-col selection:bg-purple-500/30 selection:text-purple-200">
+
+    <!-- TOP CONTROL BAR -->
+    <header class="border-b border-gray-800 bg-[#161b22]/80 backdrop-blur-md px-6 py-4 flex flex-wrap justify-between items-center gap-4 sticky top-0 z-50">
+        <div class="flex items-center space-x-3">
+            <div class="w-3 h-3 bg-purple-500 rounded-full animate-pulse shadow-[0_0_10px_#a855f7]"></div>
+            <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+                UniAdmission ReAct Agent <span class="text-xs font-mono px-2 py-0.5 bg-gray-800 rounded text-gray-400 border border-gray-700">v2.0-Gemini</span>
+            </h1>
+        </div>
+        <div class="flex items-center space-x-3 w-full sm:w-auto">
+            <div class="relative w-full sm:w-72">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                    <i class="fas fa-key text-xs"></i>
+                </span>
+                <input type="password" id="apiKeyInput" placeholder="Nhập Gemini API Key tại đây..." 
+                    class="w-full pl-9 pr-4 py-1.5 bg-[#0d1117] border border-gray-700 rounded-lg text-sm text-gray-200 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all mono">
+            </div>
+            <button onclick="saveApiKey()" class="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 rounded-lg text-sm font-semibold transition-all shadow-lg shadow-purple-900/20 whitespace-nowrap">
+                Kết nối Agent
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONSOLE LAYOUT -->
+    <main class="flex-1 grid grid-cols-1 xl:grid-cols-4 overflow-hidden">
+        
+        <!-- COLUMN 1: KNOWLEDGE BASE & SIMULATED DATABASE -->
+        <section class="xl:col-span-1 border-r border-gray-800 p-5 bg-[#12161f] flex flex-col space-y-6 overflow-y-auto max-h-[calc(100vh-73px)]">
+            <div>
+                <h2 class="text-xs font-bold uppercase tracking-wider text-purple-400 mb-3 flex items-center">
+                    <i class="fas fa-server mr-2"></i> Hệ thống Công cụ (Agent Tools)
+                </h2>
+                <div class="space-y-2 text-xs text-gray-400">
+                    <div class="p-3 bg-[#161b22] border border-gray-800 rounded-lg">
+                        <span class="text-cyan-400 font-mono block mb-1">💡 search_major(keyword)</span>
+                        Tra cứu thông tin ngành học, mã ngành và tổ hợp xét tuyển.
+                    </div>
+                    <div class="p-3 bg-[#161b22] border border-gray-800 rounded-lg">
+                        <span class="text-cyan-400 font-mono block mb-1">📊 check_admission_score(major_id)</span>
+                        Lấy dữ liệu điểm chuẩn chính xác của ngành trong 2 năm gần nhất.
+                    </div>
+                    <div class="p-3 bg-[#161b22] border border-gray-800 rounded-lg">
+                        <span class="text-cyan-400 font-mono block mb-1">🧮 calc_probability(user_score, major_id)</span>
+                        Thuật toán so sánh phổ điểm để tính tỷ lệ % đỗ thực tế.
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h2 class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-3 flex items-center">
+                    <i class="fas fa-database mr-2"></i> Cơ sở dữ liệu Nhà trường (Mock DB)
+                </h2>
+                <div class="bg-[#0d1117] border border-gray-800 rounded-lg p-3 text-xs overflow-x-auto mono">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-800 text-gray-500">
+                                <th class="pb-2">Mã Ngành</th>
+                                <th class="pb-2">Tên Ngành</th>
+                                <th class="pb-2">Khối</th>
+                                <th class="pb-2">2024</th>
+                                <th class="pb-2">2025</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-400 divide-y divide-gray-900/50">
+                            <tr><td class="py-2 text-purple-400">KTPM</td><td class="text-gray-300">Kỹ thuật Phần mềm</td><td>A00, A01</td><td>26.5</td><td>27.2</td></tr>
+                            <tr><td class="py-2 text-purple-400">KHMT</td><td class="text-gray-300">Khoa học Máy tính</td><td>A00, D01</td><td>27.0</td><td>27.8</td></tr>
+                            <tr><td class="py-2 text-purple-400">TTNT</td><td class="text-gray-300">Trí tuệ Nhân tạo</td><td>A00, A01</td><td>27.5</td><td>28.1</td></tr>
+                            <tr><td class="py-2 text-purple-400">ANM</td><td class="text-gray-300">An toàn Thông tin</td><td>A00, D07</td><td>25.8</td><td>26.4</td></tr>
+                            <tr><td class="py-2 text-purple-400">DTVT</td><td class="text-gray-300">Điện tử Viễn thông</td><td>A00, A01</td><td>24.2</td><td>24.8</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mt-auto p-3.5 bg-purple-950/20 border border-purple-900/40 rounded-xl">
+                <h3 class="text-sm font-semibold text-purple-300 mb-1"><i class="fas fa-magic mr-1.5"></i> Gợi ý câu hỏi:</h3>
+                <p class="text-xs text-gray-400 leading-relaxed italic">
+                    "Mình được 27 điểm khối A00, tư vấn giúp mình khả năng đỗ ngành Kỹ thuật Phần mềm với!"
+                </p>
+            </div>
+        </section>
+
+        <!-- COLUMN 2 & 3: CENTER CHAT DISPLAY & LIVE TRACE INTERACTION -->
+        <section class="xl:col-span-2 flex flex-col min-h-0 bg-[#0d1117] relative">
+            <!-- CHAT INTERFACE DISPLAY -->
+            <div id="chatContainer" class="flex-1 p-6 overflow-y-auto space-y-4 max-h-[calc(100vh-160px)]">
+                <!-- Chào mừng ban đầu -->
+                <div class="flex items-start space-x-3 max-w-2xl">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-md shadow-purple-500/20 shrink-0">
+                        AI
+                    </div>
+                    <div class="bg-[#161b22] border border-gray-800 text-gray-300 rounded-2xl rounded-tl-none px-4 py-3 text-sm leading-relaxed shadow-sm">
+                        Xin chào! Mình là AI Agent tư vấn tuyển sinh đại học được tích hợp chu trình suy luận **ReAct**[cite: 2, 3]. Hãy điền API Key của bạn phía trên, nhập tổ hợp môn và số điểm của bạn, mình sẽ tự động lập luận và tra cứu thông tin chính xác nhất giúp bạn!
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAT INPUT COMPONENT -->
+            <div class="p-4 bg-[#161b22]/50 backdrop-blur-sm border-t border-gray-800 sticky bottom-0">
+                <div class="max-w-3xl mx-auto flex items-center space-x-2">
+                    <input type="text" id="userInput" placeholder="Nhập câu hỏi của bạn tại đây (ví dụ: điểm khối A00 là 27, muốn học Phần mềm)..."
+                        class="flex-1 bg-[#0d1117] text-gray-200 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-gray-600"
+                        onkeydown="if(event.key === 'Enter') handleSendRequest()">
+                    <button onclick="handleSendRequest()" id="sendBtn" class="w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-xl flex items-center justify-center transition-all shadow-md shadow-purple-900/30 shrink-0">
+                        <i class="fas fa-paper-plane text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- COLUMN 4: OBSERVABILITY & TELEMETRY LIVE MONITORING -->
+        <section class="xl:col-span-1 border-l border-gray-800 bg-[#12161f] p-5 flex flex-col space-y-6 overflow-y-auto max-h-[calc(100vh-73px)]">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center">
+                <i class="fas fa-chart-line mr-2"></i> Giám sát Trạng thái Thực tế (Telemetry)
+            </h2>
+
+            <!-- METRIC CARDS -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-[#161b22] border border-gray-800 rounded-xl p-3.5 flex flex-col">
+                    <span class="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">Thời gian phản hồi</span>
+                    <span class="text-lg font-bold text-cyan-400 mono" id="metricLatency">0.00s</span>
+                </div>
+                <div class="bg-[#161b22] border border-gray-800 rounded-xl p-3.5 flex flex-col">
+                    <span class="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">Số Vòng Lặp (ReAct)</span>
+                    <span class="text-lg font-bold text-purple-400 mono" id="metricLoops">0</span>
+                </div>
+                <div class="bg-[#161b22] border border-gray-800 rounded-xl p-3.5 flex flex-col col-span-2">
+                    <span class="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">Mô hình hiện tại</span>
+                    <span class="text-xs font-semibold text-emerald-400 mt-1 flex items-center">
+                        <i class="fas fa-brain mr-1.5 text-[10px]"></i> gemini-1.5-flash
+                    </span>
+                </div>
+            </div>
+
+            <!-- LIVE AGENT REASONING TRACE LOGS -->
+            <div class="flex-1 flex flex-col min-h-[300px]">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-amber-500 flex items-center">
+                        <i class="fas fa-terminal mr-2"></i> Chu trình Suy luận (ReAct Trace)
+                    </h3>
+                    <span class="text-[10px] bg-amber-950/40 text-amber-400 border border-amber-900/50 px-1.5 py-0.5 rounded mono">LIVE</span>
+                </div>
+                <div id="liveTraceLog" class="flex-1 bg-[#0d1117] border border-gray-800 rounded-xl p-4 font-mono text-xs text-gray-400 overflow-y-auto space-y-3 leading-relaxed">
+                    <div class="text-gray-600 italic">Hệ thống đang chờ lệnh... Toàn bộ luồng Thought -> Action -> Observation sẽ hiển thị tại đây khi bạn gửi câu hỏi[cite: 2].</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- INLINE SIMULATED DATA & LOGIC JAVASCRIPT -->
+    <script type="module">
+        // Import Google Gen AI SDK
+        import { GoogleGenAI } from 'https://esm.run/@google/generative-ai';
+
+        // Mock Database đại học nội bộ cho Agent Tra cứu
+        const ADMISSION_DB = {
+            "KTPM": { name: "Kỹ thuật Phần mềm", group: ["A00", "A01"], score2024: 26.5, score2025: 27.2 },
+            "KHMT": { name: "Khoa học Máy tính", group: ["A00", "D01"], score2024: 27.0, score2025: 27.8 },
+            "TTNT": { name: "Trí tuệ Nhân tạo", group: ["A00", "A01"], score2024: 27.5, score2025: 28.1 },
+            "ANM": { name: "An toàn Thông tin", group: ["A00", "D07"], score2024: 25.8, score2025: 26.4 },
+            "DTVT": { name: "Điện tử Viễn thông", group: ["A00", "A01"], score2024: 24.2, score2025: 24.8 }
+        };
+
+        // Khai báo các Hàm Tool thực tế (Real Action Executions)
+        function search_major(keyword) {
+            const kw = keyword.toLowerCase();
+            const results = [];
+            for (let id in ADMISSION_DB) {
+                if (id.toLowerCase().includes(kw) || ADMISSION_DB[id].name.toLowerCase().includes(kw)) {
+                    results.push({ id, ...ADMISSION_DB[id] });
+                }
+            }
+            return results.length > 0 ? JSON.stringify(results) : "Không tìm thấy ngành tương ứng với từ khóa.";
+        }
+
+        function check_admission_score(major_id) {
+            const id = major_id.toUpperCase().trim();
+            if (ADMISSION_DB[id]) {
+                return JSON.stringify({
+                    id: id,
+                    name: ADMISSION_DB[id].name,
+                    score2024: ADMISSION_DB[id].score2024,
+                    score2025: ADMISSION_DB[id].score2025
+                });
+            }
+            return "Không tìm thấy dữ liệu điểm chuẩn cho mã ngành này.";
+        }
+
+        function calc_probability(user_score, major_id) {
+            const id = major_id.toUpperCase().trim();
+            const score = parseFloat(user_score);
+            if (!ADMISSION_DB[id]) return "Không xác định được ngành.";
+            
+            const lastYearScore = ADMISSION_DB[id].score2025;
+            const diff = score - lastYearScore;
+            
+            let percentage = 50; // Nếu bằng điểm năm ngoái
+            if (diff >= 1.5) percentage = 95;
+            else if (diff >= 1.0) percentage = 90;
+            else if (diff >= 0.5) percentage = 80;
+            else if (diff > 0) percentage = 65;
+            else if (diff >= -0.5) percentage = 35;
+            else if (diff >= -1.0) percentage = 15;
+            else percentage = 5;
+
+            return JSON.stringify({
+                major: ADMISSION_DB[id].name,
+                user_score: score,
+                last_year_score: lastYearScore,
+                probability: percentage + "%",
+                advice: percentage >= 65 ? "Khả năng đỗ cao, an toàn." : "Tỷ lệ chọi lớn, nên cân nhắc đặt làm nguyện vọng phụ kèm ngành an toàn khác."
+            });
+        }
+
+        // Tự động tải API Key cũ nếu đã có lưu trong máy
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedKey = localStorage.getItem('gemini_admission_key');
+            if (savedKey) {
+                document.getElementById('apiKeyInput').value = savedKey;
+            }
+        });
+
+        window.saveApiKey = function() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if (key) {
+                localStorage.setItem('gemini_admission_key', key);
+                alert('Đã lưu kết nối Gemini API thành công!');
+            } else {
+                alert('Vui lòng điền API Key hợp lệ.');
+            }
+        }
+
+        // Thực hiện xử lý chính của luồng ReAct Agentic
+        window.handleSendRequest = async function() {
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+            const promptInput = document.getElementById('userInput');
+            const userQuestion = promptInput.value.trim();
+
+            if (!apiKey) {
+                alert("Bạn cần cấu hình Gemini API Key ở góc trên bên phải trước!");
+                return;
+            }
+            if (!userQuestion) return;
+
+            // Render giao diện người dùng gửi câu hỏi
+            appendChatMessage("user", userQuestion);
+            promptInput.value = "";
+
+            // Reset bảng điều khiển giám sát Telemetry
+            const startTime = performance.now();
+            document.getElementById('liveTraceLog').innerHTML = "";
+            let currentLoops = 0;
+            updateTelemetry(0, 0);
+
+            // Xây dựng System Prompt định hướng Agent chạy theo mô hình ReAct
+            const systemPrompt = `
+You are a highly intelligent University Admission AI Agent that uses a ReAct pattern (Thought -> Action -> Observation -> Thought -> Final Answer) to guide high school students.
+You have access to the following 3 JavaScript functions/tools to extract database facts:
+1. search_major(keyword) - Returns list of available majors with their ID and groups.
+2. check_admission_score(major_id) - Returns cut-off points of 2024 and 2025.
+3. calc_probability(user_score, major_id) - Returns statistically calculated admission chance.
+
+CRITICAL INSTRUCTIONS FOR OUTPUT FORMATTING:
+You MUST follow a strict loop format. You can do multiple steps of Thought and Action, but each response segment MUST ONLY be formatted as either:
+Option A (When you need to call a tool):
+Thought: [Reason about what information you need and which tool to use next]
+Action: tool_name(argument)
+
+Option B (When you have collected all required details and want to answer the student):
+Thought: [Confirm you have all data to solve user request]
+Final Answer: [Detailed helpful counseling text in Vietnamese language]
+
+Let's begin. Address the following user question in Vietnamese: "${userQuestion}"
+`;
+
+            try {
+                // Khởi tạo Gemini Model Client
+                const ai = new GoogleGenAI({ apiKey: apiKey });
+                // Sử dụng model có tốc độ phản hồi nhanh, tối ưu cấu trúc text
+                const model = ai.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+                let conversationHistory = [{ role: 'user', parts: [{ text: systemPrompt }] }];
+                let agentReachedFinalAnswer = false;
+                let maxSafetySteps = 5; // Giới hạn vòng lặp tránh Agent bị lặp vô tận (Infinite loop safety)[cite: 2]
+
+                while (!agentReachedFinalAnswer && currentLoops < maxSafetySteps) {
+                    currentLoops++;
+                    document.getElementById('metricLoops').innerText = currentLoops;
+
+                    appendTraceLog(`System`, `Đang kích hoạt Vòng lặp Suy luận #${currentLoops}...`, 'text-gray-500');
+
+                    // Gọi LLM lấy bước suy nghĩ tiếp theo
+                    const response = await model.generateContent({ contents: conversationHistory });
+                    const responseText = response.text();
+                    
+                    // Thêm phản hồi của LLM vào lịch sử hội thoại nội bộ
+                    conversationHistory.push({ role: 'model', parts: [{ text: responseText }] });
+
+                    // Phân tách cú pháp định dạng ReAct (Thought / Action / Final Answer)
+                    const thoughtMatch = responseText.match(/Thought:\s*(.*?)(?=(Action:|Final Answer:|$))/s);
+                    const actionMatch = responseText.match(/Action:\s*([a-zA-Z0-9_]+)\((.*?)\)/s);
+                    const finalAnswerMatch = responseText.match(/Final Answer:\s*(.*)/s);
+
+                    if (thoughtMatch) {
+                        appendTraceLog(`Thought 🧠`, thoughtMatch[1].trim(), 'text-amber-400');
+                    }
+
+                    if (actionMatch) {
+                        const toolName = actionMatch[1].trim();
+                        const rawArgs = actionMatch[2].replace(/['"]/g, "").trim(); // dọn dẹp chuỗi string đối số
+
+                        appendTraceLog(`Action 🛠️`, `Triệu hồi công cụ: ${toolName}(${rawArgs})`, 'text-cyan-400');
+
+                        // Thực thi công cụ tương ứng dựa trên suy đoán của Agent
+                        let observationResult = "";
+                        if (toolName === "search_major") {
+                            observationResult = search_major(rawArgs);
+                        } else if (toolName === "check_admission_score") {
+                            observationResult = check_admission_score(rawArgs);
+                        } else if (toolName === "calc_probability") {
+                            // Tách đối số nếu có 2 tham số đầu vào
+                            const parts = rawArgs.split(",");
+                            const scoreArg = parts[0].trim();
+                            const majorIdArg = parts[1] ? parts[1].trim() : "";
+                            observationResult = calc_probability(scoreArg, Gonzales, majorIdArg);
+                        } else {
+                            observationResult = `Lỗi: Không tồn tại công cụ mang tên '${toolName}'.`; // Xử lý lỗi gọi sai tool[cite: 1]
+                        }
+
+                        appendTraceLog(`Observation 👁️`, observationResult, 'text-emerald-400 border-l border-emerald-800 pl-2 bg-emerald-950/10 py-1');
+
+                        // Đưa kết quả công cụ thu thập được quay trở lại Prompt cho vòng lặp kế tiếp
+                        conversationHistory.push({
+                            role: 'user',
+                            parts: [{ text: `Observation: ${observationResult}` }]
+                        });
+
+                    } else if (finalAnswerMatch) {
+                        // Nhận diện Agent đã tìm ra câu trả lời cuối cùng chính xác nhất
+                        agentReachedFinalAnswer = true;
+                        const finalAnswerText = finalAnswerMatch[1].trim();
+                        appendChatMessage("ai", finalAnswerText);
+                        appendTraceLog(`Success 🎉`, `Đã tìm ra câu trả lời thỏa mãn nhu cầu người dùng.`, 'text-emerald-500 font-bold');
+                    } else {
+                        // Trường hợp LLM tự phát sinh định dạng văn bản thô ngoài cấu trúc ReAct[cite: 1]
+                        agentReachedFinalAnswer = true;
+                        appendChatMessage("ai", responseText);
+                        appendTraceLog(`Warning ⚠️`, `Mô hình trả về chuỗi text thô chưa chuẩn hóa ReAct Parser.`, 'text-red-400');
+                    }
+                }
+
+                if (currentLoops >= maxSafetySteps && !agentReachedFinalAnswer) {
+                    appendTraceLog(`Timeout 🚨`, `Vượt giới hạn vòng lặp cho phép (max_steps=5). Ngắt tiến trình tự động.`, 'text-red-500 font-bold');[cite: 1]
+                    appendChatMessage("ai", "Xin lỗi bạn, chuỗi phân tích thông tin tuyển sinh này quá phức tạp và đã chạm ngưỡng xử lý an toàn. Vui lòng đặt câu hỏi cụ thể hơn nhé!");
+                }
+
+                // Tính toán thời gian hoàn thành tác vụ
+                const endTime = performance.now();
+                const latencySeconds = ((endTime - startTime) / 1000).toFixed(2);
+                document.getElementById('metricLatency').innerText = `${latencySeconds}s`;
+
+            } catch (error) {
+                console.error(error);
+                appendTraceLog(`Lỗi hệ thống`, error.message, 'text-red-500 font-bold');
+                appendChatMessage("ai", "Có lỗi xảy ra trong quá trình Agent thực thi suy luận. Hãy kiểm tra lại tính chính xác của API Key hoặc kết nối mạng của bạn.");
+            }
+        };
+
+        // Giao diện phụ trợ: Render tin nhắn Chat
+        function appendChatMessage(sender, text) {
+            const container = document.getElementById('chatContainer');
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex items-start space-x-3 ${sender === 'user' ? 'justify-end' : 'max-w-2xl'}`;
+
+            const avatar = sender === 'user' 
+                ? `<div class="w-8 h-8 rounded-lg bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-300 order-2 shrink-0 ml-3">ME</div>`
+                : `<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-md shadow-purple-500/20 shrink-0">AI</div>`;
+
+            const messageBox = sender === 'user'
+                ? `<div class="bg-purple-600/20 border border-purple-500/30 text-purple-100 rounded-2xl rounded-tr-none px-4 py-3 text-sm leading-relaxed order-1">${text}</div>`
+                : `<div class="bg-[#161b22] border border-gray-800 text-gray-300 rounded-2xl rounded-tl-none px-4 py-3 text-sm leading-relaxed shadow-sm">${text}</div>`;
+
+            wrapper.innerHTML = avatar + messageBox;
+            container.appendChild(wrapper);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Giao diện phụ trợ: Ghi vết chuỗi log suy luận
+        function appendTraceLog(tag, content, colorClass = 'text-gray-400') {
+            const traceContainer = document.getElementById('liveTraceLog');
+            const logItem = document.createElement('div');
+            logItem.className = `border-b border-gray-900/50 pb-2 ${colorClass}`;
+            logItem.innerHTML = `<span class="font-bold uppercase tracking-wider text-[10px] block opacity-80">[${tag}]</span> ${content}`;
+            traceContainer.appendChild(logItem);
+            traceContainer.scrollTop = traceContainer.scrollHeight;
+        }
+
+        function updateTelemetry(latency, loops) {
+            document.getElementById('metricLatency').innerText = `${latency.toFixed(2)}s`;
+            document.getElementById('metricLoops').innerText = loops;
+        }
+    </script>
+</body>
+</html>

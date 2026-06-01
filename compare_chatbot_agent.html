@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>So Sánh Chatbot và Agent</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f8fafc; color: #111827; }
+        .container { max-width: 900px; margin: auto; }
+        .card { background: white; border-radius: 14px; padding: 24px; margin-bottom: 24px; box-shadow: 0 12px 30px rgba(15,23,42,0.08); }
+        h1, h2 { color: #111827; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { padding: 14px 12px; border: 1px solid #e2e8f0; }
+        th { background: #eff6ff; text-align: left; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>So sánh Chatbot và Agent</h1>
+            <p>Trang này giải thích sự khác biệt giữa một chatbot LLM thông thường và một agent tư vấn tuyển sinh sử dụng Gemini.</p>
+        </div>
+
+        <div class="card">
+            <h2>Khác biệt chính</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tiêu chí</th>
+                        <th>Chatbot</th>
+                        <th>Agent tuyển sinh</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Luồng xử lý</td>
+                        <td>Trả lời trực tiếp theo prompt.</td>
+                        <td>Thực hiện suy nghĩ, gọi tool, quan sát rồi mới trả lời.</td>
+                    </tr>
+                    <tr>
+                        <td>Khả năng tùy biến</td>
+                        <td>Phù hợp trả lời tổng quát.</td>
+                        <td>Phù hợp tư vấn chuyên sâu, so sánh và tra cứu thông tin.</td>
+                    </tr>
+                    <tr>
+                        <td>Ứng dụng</td>
+                        <td>Hỏi đáp nhanh, hội thoại tự nhiên.</td>
+                        <td>Tuyển sinh đại học, hỗ trợ quyết định, phân tích yêu cầu.</td>
+                    </tr>
+                    <tr>
+                        <td>Độ tin cậy</td>
+                        <td>Phụ thuộc mô hình và prompt.</td>
+                        <td>Tăng cường nhờ công cụ và cấu trúc hành động.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Agent sử dụng Gemini</h2>
+            <p>Trong dự án này, agent:</p>
+            <ul>
+                <li>Khởi tạo thư viện <code>google.generativeai</code>.</li>
+                <li>Gọi API Gemini để sinh câu trả lời.</li>
+                <li>Sử dụng luật định dạng ReAct để gọi các công cụ tuyển sinh.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Ưu điểm khi so sánh</h2>
+            <ul>
+                <li>Agent có cấu trúc hơn và dễ kiểm soát hơn so với chatbot thuần túy.</li>
+                <li>Agent có thể tự động chọn đúng công cụ xử lý, giảm tải việc cầu cứu thông tin.</li>
+                <li>Agent phù hợp với các tiến trình tư vấn tuyển sinh phức tạp và nhiều bước.</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
