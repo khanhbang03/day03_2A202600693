@@ -51,6 +51,49 @@ The code is designed as a **Production Prototype**. It includes:
 - **Robust Provider Pattern**: Easily extendable to any LLM API.
 - **Clean Skeletons**: Focus on the logic that matters—the agent's reasoning process.
 
+## 🎓 Project Showcase
+
+This project demonstrates a complete **University Admission Consulting AI Agent** built using the ReAct (Reasoning + Acting) framework.
+
+### 📄 Presentation
+
+The project presentation explains:
+
+- Business problem
+- Chatbot vs Agent comparison
+- ReAct architecture
+- Tool calling workflow
+- Agent reasoning process
+- Future improvements
+
+📁 File:
+
+```text
+AI Agent University Admission Consulting.pdf
+```
+
+### 🤖 Interactive Agent Demo
+
+A browser-based ReAct Agent console that simulates:
+
+- Thought → Action → Observation cycle
+- Tool calling
+- Admission consulting workflow
+- Agent reasoning visualization
+- Multi-step decision making
+
+📁 File:
+
+```text
+UniAdmission - ReAct Agent Console.html
+```
+
+To launch:
+
+```bash
+open "UniAdmission - ReAct Agent Console.html"
+```
+or simply double-click the file.
 ---
 
 *Happy Coding! Let's build agents that actually work.*
